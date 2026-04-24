@@ -34,6 +34,13 @@ def scheme_eval(expr, env, _=None): # Optional third argument is ignored
     else:
         # BEGIN PROBLEM 3
         "*** YOUR CODE HERE ***"
+        def eval_helper(x):
+            return scheme_eval(x, env, _)
+        
+        operater = scheme_eval(expr.first, env, _)
+        operands = expr.rest.map(eval_helper)
+
+        return scheme_apply(operater, operands, env)
         # END PROBLEM 3
 
 def scheme_apply(procedure, args, env):
@@ -45,20 +52,40 @@ def scheme_apply(procedure, args, env):
     if isinstance(procedure, BuiltinProcedure):
         # BEGIN PROBLEM 2
         "*** YOUR CODE HERE ***"
+        f = procedure.py_func
+        a = []
+        e = args
+        while e != nil:
+            a.append(e.first)
+            e = e.rest
+        if procedure.need_env:
+            a.append(env)
         # END PROBLEM 2
         try:
             # BEGIN PROBLEM 2
             "*** YOUR CODE HERE ***"
+            return f(*a)
             # END PROBLEM 2
         except TypeError as err:
             raise SchemeError('incorrect number of arguments: {0}'.format(procedure))
     elif isinstance(procedure, LambdaProcedure):
         # BEGIN PROBLEM 9
         "*** YOUR CODE HERE ***"
+        f = procedure.formals
+        b = procedure.body
+        lambda_frame = procedure.env.make_child_frame(f, args)
+
+        return eval_all(b, lambda_frame)
         # END PROBLEM 9
     elif isinstance(procedure, MuProcedure):
         # BEGIN PROBLEM 11
         "*** YOUR CODE HERE ***"
+        f = procedure.formals
+        b = procedure.body
+
+        mu_frame = env.make_child_frame(f, args)
+
+        return eval_all(b, mu_frame)
         # END PROBLEM 11
     else:
         assert False, "Unexpected procedure: {}".format(procedure)
@@ -79,7 +106,13 @@ def eval_all(expressions, env):
     2
     """
     # BEGIN PROBLEM 6
-    return scheme_eval(expressions.first, env) # replace this with lines of your own code
+    if expressions == nil:
+        return None
+    e = expressions
+    while e.rest != nil:
+        scheme_eval(e.first, env)
+        e = e.rest
+    return scheme_eval(e.first, env)
     # END PROBLEM 6
 
 
